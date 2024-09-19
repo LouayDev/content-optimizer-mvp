@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
+
 
 const userSchema = require('../shared/schemas/user.js')
 const z = require('zod')
