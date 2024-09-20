@@ -1,7 +1,9 @@
 const newExperationDate = () => {
-  return new Date().toISOString(Date.now() + 604800000)
-}
+  const currentDate = new Date();
+  currentDate.setHours(currentDate.getHours() + 2);
+  return currentDate.toISOString();
+};
 
-module.exports  = {
-  newExperationDate
-}
+module.exports = {
+  newExperationDate,
+};

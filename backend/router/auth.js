@@ -10,43 +10,45 @@ const fs = require("fs").promises;
 const { v4: uuidv4 } = require("uuid");
 
 router.post("/login", async (req, res) => {
-  const userCookie = req.cookies["sessionId"];
-
-  if (userCookie) {
+  //checks for logged-in user
+  const sessionId = req.cookies["sessionId"];
+  if (sessionId) {
     return res.status(403).json({ message: "you are already logged in" });
   }
 
+  //checks for the correct user credentials
   const { username, password } = req.body;
   const result = userSchema.safeParse({ username, password });
-
   if (!result.success) {
     return res.status(400).json({ message: result.error.issues[0].message });
   }
 
+  //starting user login
   const client = await db.pool.connect();
-
   try {
     await client.query("BEGIN");
     const checkUserSQL = await fs.readFile("./sql/checkUser.sql", {
       encoding: "UTF-8",
     });
-    const result = await client.query(checkUserSQL, [username]);
 
-    if (result.rows.length === 0) {
+    //checks for non-existing username
+    const dbUser = await client.query(checkUserSQL, [username]);
+    if (dbUser.rows.length === 0) {
       return res
         .status(404)
         .json({ message: `username: ${username}, does not exist` });
     }
 
-    const user_password_hash = result.rows[0].user_password_hash;
-    const check = await bcrypt.compare(password, user_password_hash);
-
-    if (!check) {
+    //checks for correct password
+    const user_password_hash = dbUser.rows[0].user_password_hash;
+    const checkPassword = await bcrypt.compare(password, user_password_hash);
+    if (!checkPassword) {
       return res.status(401).json({ message: "invalid password" });
     }
 
+    //creating a new session for the user
     const sessionId = uuidv4();
-    const user_id = result.rows[0].user_id;
+    const user_id = dbUser.rows[0].user_id;
     const newUserSessionSQL = await fs.readFile("./sql/newUserSession.sql", {
       encoding: "UTF-8",
     });
@@ -56,6 +58,7 @@ router.post("/login", async (req, res) => {
       newExperationDate(),
     ]);
 
+    //responding with the sessionId in a cookie
     res.cookie("sessionId", sessionId, {
       maxAge: 604800000,
     });
@@ -64,6 +67,7 @@ router.post("/login", async (req, res) => {
     await client.query("COMMIT");
   } catch (err) {
     await client.query("ROLLBACK");
+    console.log(err);
     res.status(404).json({ err });
   } finally {
     client.release();
@@ -71,9 +75,9 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/logout", async (req, res) => {
-  const userCookie = req.cookies["sessionId"];
+  const sessionId = req.cookies["sessionId"];
 
-  if (!userCookie) {
+  if (!sessionId) {
     return res.status(403).json({ message: "you are already logged out" });
   }
   try {
@@ -83,7 +87,7 @@ router.post("/logout", async (req, res) => {
         encoding: "UTF-8",
       }
     );
-    await db.query(clearUserSessionSQL, [userCookie]);
+    await db.query(clearUserSessionSQL, [sessionId]);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ err });
