@@ -1,0 +1,1 @@
+INSERT INTO users (username, user_password_hash) VALUES ($1, $2)
