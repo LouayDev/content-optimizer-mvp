@@ -5,7 +5,7 @@ const userSchema = require('../shared/schemas/user.js')
 const z = require('zod')
 const db = require('./db.js')
 const fs = require('fs').promises
-
+const bcrypt = require('bcrypt')
 
 //middleware
 app.use(express.json())
@@ -32,8 +32,11 @@ app.post('/signup', async (req, res) => {
   }
 
   try {
+    const salt = await bcrypt.genSalt(12)
+    const hashedPassword = await bcrypt.hash(password, salt)
+    
     const createUserSql = await fs.readFile('./sql/createUser.sql', {encoding: 'UTF-8'})
-    const response = await db.query(createUserSql, [username, password])
+    const response = await db.query(createUserSql, [username, hashedPassword])
 
     res.status(201).json({message: "user created sucessfully"})
   } catch(err){
