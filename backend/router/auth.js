@@ -70,4 +70,27 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/logout", async (req, res) => {
+  const userCookie = req.cookies["sessionId"];
+
+  if (!userCookie) {
+    return res.status(403).json({ message: "you are already logged out" });
+  }
+  try {
+    const clearUserSessionSQL = await fs.readFile(
+      "./sql/clearUserSession.sql",
+      {
+        encoding: "UTF-8",
+      }
+    );
+    await db.query(clearUserSessionSQL, [userCookie]);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ err });
+  }
+
+  res.clearCookie("sessionId");
+  res.status(200).json({ message: "user has logged out sucessfully" });
+});
+
 module.exports = router;
