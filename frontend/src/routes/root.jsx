@@ -7,9 +7,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Root />, // A layout component wrapping your content (header, footer, etc.)
-    children: [
-      { path: '', element: <Home /> }, // Default route for "/"
-    ],
+    children: [],
   },
 ]);
 
