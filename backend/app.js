@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
+const { invalidJsonInBody } = require("./middlewares/errorHandling.js");
 
 //router imports
 const usersRouter = require("./router/users.js");
@@ -11,12 +12,7 @@ const authRouter = require("./router/auth.js");
 app.use(express.json());
 app.use(cookieParser());
 //checking for express syntax error when invalid json body
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
-    res.status(400).json({ message: "ivalid json in the body" });
-  }
-  next();
-});
+app.use(invalidJsonInBody);
 
 //router
 app.use("/users", usersRouter);
