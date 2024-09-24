@@ -3,12 +3,14 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const { invalidJsonInBody } = require("./middlewares/errorHandling.js");
+const cors = require("cors");
 
 //router imports
 const usersRouter = require("./router/users.js");
 const authRouter = require("./router/auth.js");
 
 //middleware
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 //checking for express syntax error when invalid json body
@@ -17,6 +19,7 @@ app.use(invalidJsonInBody);
 //router
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
+n;
 
 const PORT = 4000;
 app.listen(PORT, () => {
