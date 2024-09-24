@@ -19,7 +19,6 @@ app.use(invalidJsonInBody);
 //router
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
-n;
 
 const PORT = 4000;
 app.listen(PORT, () => {
