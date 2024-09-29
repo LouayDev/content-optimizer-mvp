@@ -8,6 +8,7 @@ const cors = require("cors");
 //router imports
 const usersRouter = require("./router/users.js");
 const authRouter = require("./router/auth.js");
+const businessLogicRouter = require("./router/businessLogic.js");
 
 //middleware
 app.use(
@@ -24,6 +25,7 @@ app.use(invalidJsonInBody);
 //router
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
+app.use("/business-logic", businessLogicRouter);
 
 const PORT = 4000;
 app.listen(PORT, () => {
