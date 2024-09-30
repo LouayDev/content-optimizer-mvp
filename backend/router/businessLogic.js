@@ -13,21 +13,24 @@ const { removeWhiteSpaces } = require("../utils/removeWhiteSpaces");
 router.post("/fetch-html", authenticate, async (req, res) => {
   const { url, topic: query } = req.body;
 
-  //checking if url exists & its valid
-  if (!url) {
+  //checking if url exists & its valid....
+  //TODO: use zod for parsing the request body
+  if (!url || !query) {
     return res.status(400).json({ message: "url is required" });
   }
-  if (typeof url !== "string" || !isValidURL(url)) {
+  if (
+    typeof url !== "string" ||
+    !isValidURL(url) ||
+    typeof query !== "string"
+  ) {
     return res.status(400).json({
       message: "url must be a type of stirng nad must be a valid url",
     });
   }
-
+  //lunching the browser and opening a new blank page
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
   try {
-    //lunching the browser and opening a new blank page
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-
     //navigating to the specified url and extracing its content
     await page.goto(url, { waitUntil: "domcontentloaded" });
     const dirtyHTML = await page.content();
@@ -136,7 +139,7 @@ const getPageWordCount = async (url) => {
     throw new Error("url argument must be a valid url");
   }
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
   try {
