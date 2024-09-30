@@ -10,6 +10,20 @@ const sanitizeHTML = require("sanitize-html");
 const { isValidURL } = require("../utils/isValidUrl");
 const { removeWhiteSpaces } = require("../utils/removeWhiteSpaces");
 
+//getting the average wordcount for the top 3 websites
+const getTopThreeWebsitesAverageWordcount = async (urls) => {
+  const totalWordCount = 0;
+
+  try {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+  } catch (err) {
+    throw err;
+  }
+
+  return totalWordCount / 3;
+};
+
 router.post("/fetch-html", authenticate, async (req, res) => {
   const { url } = req.body;
 
@@ -25,7 +39,7 @@ router.post("/fetch-html", authenticate, async (req, res) => {
 
   try {
     //lunching the browser and opening a new blank page
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
     //navigating to the specified url and extracing its content
@@ -80,8 +94,12 @@ router.post("/fetch-html", authenticate, async (req, res) => {
 
     //closing the browser and returning the response
     await browser.close();
+
+    getTopThreeWebsitesURL("bmw m4 g80 review");
+
     return res.json({
       html: neetHTML,
+      // target_wordcount:
     });
   } catch (err) {
     console.log(err);
@@ -90,3 +108,25 @@ router.post("/fetch-html", authenticate, async (req, res) => {
 });
 
 module.exports = router;
+
+//retrieving the top three urls for a given query
+const getTopThreeWebsitesURL = async (query) => {
+  let topThreeUrls = [];
+
+  try {
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await browser.newPage();
+
+    await page.goto("https://www.google.com");
+    await page.type("#APjFqb", query);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector("h3");
+
+    const topThreeLinks = await page.$$eval("a h3", (anchors) => {
+      return anchors.slice(0, 3).map((anchor) => anchor.closest("a").href);
+    });
+  } catch (err) {
+    console.log("getTopThreeWebsitesURL err: ", err);
+    throw err;
+  }
+};
