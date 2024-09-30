@@ -1,14 +1,19 @@
+//core
 const express = require("express");
 const router = express.Router();
+//middlewares
 const authenticate = require("../middlewares/authenticate");
-const { isValidURL } = require("../utils/isValidUrl");
-const axios = require("axios");
-const fs = require("fs").promises;
+//libraries
 const puppeteer = require("puppeteer");
+const sanitizeHTML = require("sanitize-html");
+//utils
+const { isValidURL } = require("../utils/isValidUrl");
+const { removeWhiteSpaces } = require("../utils/removeWhiteSpaces");
 
 router.post("/fetch-html", authenticate, async (req, res) => {
   const { url } = req.body;
 
+  //checking if url exists & its valid
   if (!url) {
     return res.status(400).json({ message: "url is required" });
   }
@@ -19,26 +24,65 @@ router.post("/fetch-html", authenticate, async (req, res) => {
   }
 
   try {
+    //lunching the browser and opening a new blank page
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    await page.goto(url, { waitUntil: "networkidle2" });
+    //going to the specifies url and extracing its content
+    await page.goto(url);
+    const dirtyHTML = await page.content();
 
-    const specificTagsHTML = await page.evaluate(() => {
-      const tags = Array.from(
-        document.querySelectorAll(
-          "a, p, span, button, ul, li, ol, h1, h2, h3, h6"
-        )
-      );
-
-      // Return the outer HTML of each matching element
-      return tags.map((tag) => tag.outerHTML).join("\n");
+    //sanitising the html from unwated tags and removing whitespaces
+    const cleanHTML = await sanitizeHTML(dirtyHTML, {
+      allowedTags: [
+        "p",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "span",
+        "strong",
+        "em",
+        "b",
+        "i",
+        "mark",
+        "small",
+        "del",
+        "ins",
+        "sub",
+        "sup",
+        "code",
+        "pre",
+        "blockquote",
+        "q",
+        "abbr",
+        "cite",
+        "dfn",
+        "kbd",
+        "samp",
+        "var",
+        "u",
+        "ul",
+        "ol",
+        "li",
+        "dl",
+        "dt",
+        "dd",
+        "table",
+        "tr",
+        "th",
+        "td",
+      ],
     });
+    const neetHTML = await removeWhiteSpaces(textContent);
 
-    await fs.writeFile("test.html", specificTagsHTML);
+    //closing the browser and returning the response
     await browser.close();
-
-    res.json({ message: "all good" });
+    return res.json({
+      html: neetHTML,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500);
