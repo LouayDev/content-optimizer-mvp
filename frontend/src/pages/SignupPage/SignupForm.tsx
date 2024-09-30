@@ -17,7 +17,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { baseApi } from '@/service/fetchApi';
 import { AxiosError } from 'axios';
 
-export function LoginForm() {
+export function SignupForm() {
   const navigate = useNavigate();
 
   // Redirect the user if they are already logged in
@@ -39,7 +39,7 @@ export function LoginForm() {
   const onSubmit = async (values: z.infer<typeof userSchema>) => {
     try {
       console.log('Submitting form', values);
-      const res = await baseApi.post('/auth/login', values);
+      const res = await baseApi.post('/users/newUser', values);
       localStorage.setItem('user', JSON.stringify(res.data)); // Store user in localStorage
       navigate('/home');
 
@@ -92,9 +92,9 @@ export function LoginForm() {
         <Button type="submit">Submit</Button>
       </form>
       <div>
-        Don’t have an account?{'  '}
-        <Link to="/signup" className="text-cyan-500 font-bold">
-          Sign up
+        Already have an account?{'  '}
+        <Link className="text-cyan-500 font-bold" to="/login">
+          Login
         </Link>{' '}
       </div>
     </Form>

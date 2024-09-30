@@ -3,11 +3,25 @@ import { createBrowserRouter } from 'react-router-dom';
 import Root from '../layouts/Root';
 import Home from '../pages/Home';
 import LoginPage from '@/pages/LoginPage';
+import { ProtectedRoute } from '@/components/routes/protectedRoutes';
+import SignupPage from '@/pages/SignupPage';
 
 const router = createBrowserRouter([
   {
-    element: <Root />, // A layout component wrapping your content (header, footer, etc.)
-    children: [{ index: true, element: <LoginPage /> }],
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: 'login',
+    element: <LoginPage />,
+  },
+  {
+    path: 'Signup',
+    element: <SignupPage />,
   },
 ]);
 
