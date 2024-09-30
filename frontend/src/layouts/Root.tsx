@@ -1,11 +1,11 @@
-import { LoginForm } from '../features/authentication/components/LoginForm';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Outlet } from 'react-router-dom';
 
 const Root = () => {
   return (
-    <div>
-      Root
-      <LoginForm />
-    </div>
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
   );
 };
 
