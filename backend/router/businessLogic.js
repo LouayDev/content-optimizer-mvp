@@ -28,8 +28,8 @@ router.post("/fetch-html", authenticate, async (req, res) => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    //going to the specifies url and extracing its content
-    await page.goto(url);
+    //navigating to the specified url and extracing its content
+    await page.goto(url, { waitUntil: "domcontentloaded" });
     const dirtyHTML = await page.content();
 
     //sanitising the html from unwated tags and removing whitespaces
@@ -76,7 +76,7 @@ router.post("/fetch-html", authenticate, async (req, res) => {
         "td",
       ],
     });
-    const neetHTML = await removeWhiteSpaces(textContent);
+    const neetHTML = await removeWhiteSpaces(cleanHTML);
 
     //closing the browser and returning the response
     await browser.close();
