@@ -11,12 +11,23 @@ const { isValidURL } = require("../utils/isValidUrl");
 const { removeWhiteSpaces } = require("../utils/removeWhiteSpaces");
 
 //getting the average wordcount for the top 3 websites
-const getTopThreeWebsitesAverageWordcount = async (urls) => {
+const getPageWordCount = async (url) => {
+  if (!isValidURL(url)) {
+    throw new Error("url argument must be a valid url");
+  }
+
   const totalWordCount = 0;
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const textContent = await page.evaluate(() => {
+      return document.body.innerText;
+    });
+    const wordCount = textContent.split(/\s+/).length;
+    console.log(`word count for ${url} is: `, wordCount);
+    await browser.close();
   } catch (err) {
     throw err;
   }
@@ -94,8 +105,6 @@ router.post("/fetch-html", authenticate, async (req, res) => {
 
     //closing the browser and returning the response
     await browser.close();
-
-    getTopThreeWebsitesURL("bmw m4 g80 review");
 
     return res.json({
       html: neetHTML,
