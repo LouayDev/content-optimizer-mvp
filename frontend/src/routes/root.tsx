@@ -1,18 +1,18 @@
 // src/routes/AppRoutes.jsx
-import { createBrowserRouter } from 'react-router-dom';
-import Root from '../layouts/Root';
-import Home from '../pages/Home';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import RootLayout from '../layouts/Root';
 import LoginPage from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/routes/protectedRoutes';
 import SignupPage from '@/pages/SignupPage';
+import Home from '@/pages/HomePage';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: 'home',
     element: (
-      <ProtectedRoute>
-        <Home />
-      </ProtectedRoute>
+      // <ProtectedRoute>
+      <Home />
+      // </ProtectedRoute>
     ),
   },
   {
