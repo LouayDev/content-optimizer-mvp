@@ -9,6 +9,8 @@ const sanitizeHTML = require("sanitize-html");
 //utils
 const { isValidURL } = require("../utils/isValidUrl");
 const { removeWhiteSpaces } = require("../utils/removeWhiteSpaces");
+//extracting keywords
+const extractKeywords = require("../nlp");
 
 router.post("/fetch-html", authenticate, async (req, res) => {
   const { url, topic: query } = req.body;
@@ -27,6 +29,7 @@ router.post("/fetch-html", authenticate, async (req, res) => {
       message: "url must be a type of stirng nad must be a valid url",
     });
   }
+
   //lunching the browser and opening a new blank page
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
@@ -85,8 +88,10 @@ router.post("/fetch-html", authenticate, async (req, res) => {
     await browser.close();
 
     const TopThreeUrls = await getTopThreeWebsitesURL(query);
-    const averageWordCount = await getAverageWordCount(TopThreeUrls);
-
+    const { averageWordCount, textContents } = await getAverageWordCount(
+      TopThreeUrls
+    );
+    // processText(textContents.join(" "));
     return res.json({
       html: neetHTML,
       target_wordcount: averageWordCount,
@@ -122,15 +127,19 @@ const getTopThreeWebsitesURL = async (query) => {
   }
 };
 
-//getting the top three urls
+//getting the top three urls wordcount average
 const getAverageWordCount = async (urls) => {
   let totalWordCount = 0;
+  let textContents = [];
   for (let url of urls) {
-    const wordCount = await getPageWordCount(url);
+    const { wordCount, textContent } = await getPageWordCount(url);
     totalWordCount += wordCount;
+    textContents.push(textContent);
   }
-  console.log("total word count for the top 3 sites is: ", totalWordCount);
-  return Math.floor(totalWordCount / urls.length);
+  return {
+    averageWordCount: Math.floor(totalWordCount / urls.length),
+    textContents,
+  };
 };
 
 //getting the wordcount for a given page
@@ -147,10 +156,14 @@ const getPageWordCount = async (url) => {
     const textContent = await page.evaluate(() => {
       return document.body.innerText;
     });
+
     const wordCount = textContent.split(/\s+/).length;
     console.log(`word count for ${url} is: `, wordCount);
     await browser.close();
-    return wordCount;
+    return {
+      wordCount,
+      textContent,
+    };
   } catch (err) {
     throw err;
   }
