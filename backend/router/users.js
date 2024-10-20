@@ -16,7 +16,6 @@ router.post("/newUser", async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const createUserSql = await fs.readFile("./sql/createUser.sql", {
       encoding: "UTF-8",
     });
